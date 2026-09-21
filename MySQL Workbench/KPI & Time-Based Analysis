@@ -1,1 +1,106 @@
 
+-- ============================================================
+--MONTHLY SALES REVENUE
+-- ============================================================
+
+SELECT
+    d.Year,
+    d.MonthNumber,
+    d.MonthName,
+    SUM(f.SalesAmount) AS Monthly_Sales_Revenue
+FROM FactSales f
+JOIN DimDate d
+    ON f.DateKey = d.DateKey
+GROUP BY
+    d.Year,
+    d.MonthNumber,
+    d.MonthName
+ORDER BY
+    d.Year,
+    d.MonthNumber;
+
+
+-- ============================================================
+-- MONTHLY SALES GROWTH RATE USING LAG
+-- ============================================================
+
+WITH MonthlySales AS (
+    SELECT
+        d.Year,
+        d.MonthNumber,
+        d.MonthName,
+        SUM(f.SalesAmount) AS Monthly_Sales_Revenue
+    FROM FactSales f
+    JOIN DimDate d
+        ON f.DateKey = d.DateKey
+    GROUP BY
+        d.Year,
+        d.MonthNumber,
+        d.MonthName
+),
+SalesWithPreviousMonth AS (
+    SELECT
+        Year,
+        MonthNumber,
+        MonthName,
+        Monthly_Sales_Revenue,
+        LAG(Monthly_Sales_Revenue)
+            OVER (
+                ORDER BY Year, MonthNumber
+            ) AS Previous_Month_Sales
+    FROM MonthlySales
+)
+SELECT
+    Year,
+    MonthNumber,
+    MonthName,
+    Monthly_Sales_Revenue,
+    Previous_Month_Sales,
+    ROUND(
+        (
+            (Monthly_Sales_Revenue - Previous_Month_Sales)
+            / Previous_Month_Sales
+        ) * 100,
+        2
+    ) AS Sales_Growth_Rate_Percentage
+FROM SalesWithPreviousMonth
+ORDER BY
+    Year,
+    MonthNumber;
+
+
+-- ============================================================
+-- DAILY SALES TREND
+-- ============================================================
+
+SELECT
+    d.FullDate,
+    SUM(f.SalesAmount) AS Daily_Sales_Revenue,
+    SUM(f.Quantity) AS Daily_Quantity_Sold,
+    COUNT(f.SaleID) AS Daily_Transactions
+FROM FactSales f
+JOIN DimDate d
+    ON f.DateKey = d.DateKey
+GROUP BY d.FullDate
+ORDER BY d.FullDate;
+
+
+-- ============================================================
+-- WEEKDAY SALES ANALYSIS
+-- ============================================================
+
+SELECT
+    d.DayOfWeek,
+    d.DayName,
+    COUNT(f.SaleID) AS Total_Transactions,
+    SUM(f.Quantity) AS Total_Quantity_Sold,
+    SUM(f.SalesAmount) AS Total_Sales_Revenue
+FROM FactSales f
+JOIN DimDate d
+    ON f.DateKey = d.DateKey
+GROUP BY
+    d.DayOfWeek,
+    d.DayName
+ORDER BY d.DayOfWeek;
+
+

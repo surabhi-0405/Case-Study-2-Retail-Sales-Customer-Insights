@@ -1,1 +1,139 @@
+-- ============================================================
+-- 1. SELECT DATABASE
+-- ============================================================
 
+USE retail_sales_dw;
+
+
+-- ============================================================
+-- 2. CHECK DATABASE TABLES
+-- ============================================================
+
+SHOW TABLES;
+
+
+-- ============================================================
+-- 3. CHECK FACT SALES RECORD COUNT
+-- ============================================================
+
+SELECT
+    COUNT(*) AS total_fact_sales_records
+FROM FactSales;
+
+
+-- ============================================================
+-- 4. CHECK CUSTOMER RECORD COUNT
+-- ============================================================
+
+SELECT
+    COUNT(*) AS total_customer_records
+FROM DimCustomer;
+
+
+-- ============================================================
+-- 5. CHECK PRODUCT RECORD COUNT
+-- ============================================================
+
+SELECT
+    COUNT(*) AS total_product_records
+FROM DimProduct;
+
+
+-- ============================================================
+-- 6. CHECK DATE RECORD COUNT
+-- ============================================================
+
+SELECT
+    COUNT(*) AS total_date_records
+FROM DimDate;
+
+
+-- ============================================================
+-- 7. CHECK FACT SALES DUPLICATES
+-- ============================================================
+
+SELECT
+    SaleID,
+    COUNT(*) AS duplicate_count
+FROM FactSales
+GROUP BY SaleID
+HAVING COUNT(*) > 1;
+
+
+-- ============================================================
+-- 8. CHECK CUSTOMER DUPLICATES
+-- ============================================================
+
+SELECT
+    CustomerID,
+    COUNT(*) AS duplicate_count
+FROM DimCustomer
+GROUP BY CustomerID
+HAVING COUNT(*) > 1;
+
+
+-- ============================================================
+-- 9. CHECK PRODUCT DUPLICATES
+-- ============================================================
+
+SELECT
+    ProductID,
+    COUNT(*) AS duplicate_count
+FROM DimProduct
+GROUP BY ProductID
+HAVING COUNT(*) > 1;
+
+
+-- ============================================================
+-- 10. CHECK MISSING VALUES IN FACT SALES
+-- ============================================================
+
+SELECT
+    COUNT(*) AS total_records,
+    SUM(CASE WHEN ProductID IS NULL THEN 1 ELSE 0 END)
+        AS missing_product_id,
+    SUM(CASE WHEN CustomerID IS NULL THEN 1 ELSE 0 END)
+        AS missing_customer_id,
+    SUM(CASE WHEN DateKey IS NULL THEN 1 ELSE 0 END)
+        AS missing_date_key,
+    SUM(CASE WHEN SalesAmount IS NULL THEN 1 ELSE 0 END)
+        AS missing_sales_amount,
+    SUM(CASE WHEN Quantity IS NULL THEN 1 ELSE 0 END)
+        AS missing_quantity
+FROM FactSales;
+
+
+-- ============================================================
+-- 11. CUSTOMER FOREIGN KEY VALIDATION
+-- ============================================================
+
+SELECT
+    COUNT(*) AS invalid_customer_records
+FROM FactSales f
+LEFT JOIN DimCustomer c
+    ON f.CustomerID = c.CustomerID
+WHERE c.CustomerID IS NULL;
+
+
+-- ============================================================
+-- 12. PRODUCT FOREIGN KEY VALIDATION
+-- ============================================================
+
+SELECT
+    COUNT(*) AS invalid_product_records
+FROM FactSales f
+LEFT JOIN DimProduct p
+    ON f.ProductID = p.ProductID
+WHERE p.ProductID IS NULL;
+
+
+-- ============================================================
+-- 13. DATE FOREIGN KEY VALIDATION
+-- ============================================================
+
+SELECT
+    COUNT(*) AS invalid_date_records
+FROM FactSales f
+LEFT JOIN DimDate d
+    ON f.DateKey = d.DateKey
+WHERE d.DateKey IS NULL;

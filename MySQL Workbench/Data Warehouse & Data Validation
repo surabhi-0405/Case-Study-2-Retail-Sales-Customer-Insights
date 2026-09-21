@@ -1,28 +1,70 @@
+USE retail_sales_dw;
 -- ============================================================
--- 1. SELECT DATABASE
+USE retail_sales_dw;
+
+CREATE TABLE IF NOT EXISTS FactSales (
+    SaleID INT PRIMARY KEY,
+    SourceSaleID VARCHAR(36) NOT NULL UNIQUE,
+    ProductID INT NOT NULL,
+    CustomerID VARCHAR(4) NOT NULL,
+    DateKey INT NOT NULL,
+    SalesAmount DECIMAL(10,2) NOT NULL,
+    Quantity INT NOT NULL,
+    Timestamp DATETIME NOT NULL,
+
+    CONSTRAINT fk_factsales_customer
+        FOREIGN KEY (CustomerID)
+        REFERENCES DimCustomer(CustomerID),
+
+    CONSTRAINT fk_factsales_product
+        FOREIGN KEY (ProductID)
+        REFERENCES DimProduct(ProductID),
+
+    CONSTRAINT fk_factsales_date
+        FOREIGN KEY (DateKey)
+        REFERENCES DimDate(DateKey)
+);
 -- ============================================================
 
 USE retail_sales_dw;
 
+CREATE TABLE IF NOT EXISTS DimCustomer (
+    CustomerID VARCHAR(4) PRIMARY KEY,
+    FirstName VARCHAR(100) NOT NULL,
+    LastName VARCHAR(100) NULL,
+    Gender VARCHAR(20) NOT NULL,
+    Region VARCHAR(50) NOT NULL,
+    SSN CHAR(9) NOT NULL
+);
 
 -- ============================================================
--- 2. CHECK DATABASE TABLES
+USE retail_sales_dw;
+
+CREATE TABLE IF NOT EXISTS DimProduct (
+    ProductID INT PRIMARY KEY,
+    ProductName VARCHAR(100) NOT NULL,
+    Category VARCHAR(50) NOT NULL
+);
 -- ============================================================
+USE retail_sales_dw;
 
-SHOW TABLES;
-
-
+CREATE TABLE IF NOT EXISTS DimDate (
+    DateKey INT PRIMARY KEY,
+    FullDate DATE NOT NULL,
+    Year INT NOT NULL,
+    MonthNumber INT NOT NULL,
+    MonthName VARCHAR(20) NOT NULL,
+    Quarter VARCHAR(2) NOT NULL,
+    Day INT NOT NULL,
+    DayName VARCHAR(20) NOT NULL,
+    DayOfWeek INT NOT NULL
+);
 -- ============================================================
--- 3. CHECK FACT SALES RECORD COUNT
--- ============================================================
-
 SELECT
     COUNT(*) AS total_fact_sales_records
 FROM FactSales;
 
 
--- ============================================================
--- 4. CHECK CUSTOMER RECORD COUNT
 -- ============================================================
 
 SELECT
@@ -31,8 +73,7 @@ FROM DimCustomer;
 
 
 -- ============================================================
--- 5. CHECK PRODUCT RECORD COUNT
--- ============================================================
+
 
 SELECT
     COUNT(*) AS total_product_records
@@ -40,16 +81,12 @@ FROM DimProduct;
 
 
 -- ============================================================
--- 6. CHECK DATE RECORD COUNT
--- ============================================================
 
 SELECT
     COUNT(*) AS total_date_records
 FROM DimDate;
 
 
--- ============================================================
--- 7. CHECK FACT SALES DUPLICATES
 -- ============================================================
 
 SELECT
@@ -61,8 +98,7 @@ HAVING COUNT(*) > 1;
 
 
 -- ============================================================
--- 8. CHECK CUSTOMER DUPLICATES
--- ============================================================
+
 
 SELECT
     CustomerID,
@@ -72,8 +108,6 @@ GROUP BY CustomerID
 HAVING COUNT(*) > 1;
 
 
--- ============================================================
--- 9. CHECK PRODUCT DUPLICATES
 -- ============================================================
 
 SELECT
@@ -85,8 +119,7 @@ HAVING COUNT(*) > 1;
 
 
 -- ============================================================
--- 10. CHECK MISSING VALUES IN FACT SALES
--- ============================================================
+
 
 SELECT
     COUNT(*) AS total_records,
@@ -104,8 +137,6 @@ FROM FactSales;
 
 
 -- ============================================================
--- 11. CUSTOMER FOREIGN KEY VALIDATION
--- ============================================================
 
 SELECT
     COUNT(*) AS invalid_customer_records
@@ -116,8 +147,7 @@ WHERE c.CustomerID IS NULL;
 
 
 -- ============================================================
--- 12. PRODUCT FOREIGN KEY VALIDATION
--- ============================================================
+
 
 SELECT
     COUNT(*) AS invalid_product_records
@@ -128,8 +158,8 @@ WHERE p.ProductID IS NULL;
 
 
 -- ============================================================
--- 13. DATE FOREIGN KEY VALIDATION
--- ============================================================
+
+
 
 SELECT
     COUNT(*) AS invalid_date_records

@@ -1,0 +1,47 @@
+Case study 2  Measures 
+
+
+Average Transaction Value = 
+DIVIDE(
+    [Total Sales Revenue],
+    [Total Transactions]
+)
+--------------------------------------------------------------------------------
+Customer Lifetime Value = 
+DIVIDE(
+    [Total Sales Revenue],
+    [Total Customers]
+)
+--------------------------------------------------------------------------------
+Sales Growth Rate = 
+VAR CurrentSales =
+    [Total Sales Revenue]
+VAR PreviousMonthSales =
+    CALCULATE(
+        [Total Sales Revenue],
+        DATEADD(
+            'retail_sales_dw dimdate'[FullDate],
+            -1,
+            MONTH
+        )
+    )
+RETURN
+    DIVIDE(
+        CurrentSales - PreviousMonthSales,
+        PreviousMonthSales
+    )
+--------------------------------------------------------------------------------
+Total Customers = 
+DISTINCTCOUNT('retail_sales_dw factsales'[CustomerID])
+--------------------------------------------------------------------------------
+Total Products = 
+DISTINCTCOUNT('retail_sales_dw factsales'[ProductID])
+--------------------------------------------------------------------------------
+Total Quantity Sold = 
+SUM('retail_sales_dw factsales'[Quantity])
+--------------------------------------------------------------------------------
+Total Sales Revenue = 
+SUM('retail_sales_dw factsales'[SalesAmount])
+--------------------------------------------------------------------------------
+Total Transactions = 
+COUNTROWS('retail_sales_dw factsales')
